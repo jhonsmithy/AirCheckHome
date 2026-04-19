@@ -31,6 +31,6 @@
 #define DISPLAY_UPDATE_INTERVAL  60000  // 60 seconds (same as measurement interval)
 
 // Enable/disable display
-#define DISPLAY_ENABLED   true
+#define DISPLAY_ENABLED   false
 
 #endif // DISPLAY_CONFIG_H
