@@ -162,3 +162,4 @@ Non-blocking архитектура: Никаких delay() в основном 
   "humidity": 45.0,
   "status": "OK"
 }
+# AirCheckHome
