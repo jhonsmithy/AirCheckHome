@@ -17,13 +17,14 @@ public:
     void showStatus(const String& status);
     void showTestMessage();  // NEW: Test message display
     void sleep();
-
+    void clearScreen();
+    
 private:
     QYEG0213RWS800* epd;
     bool initialized;
     void drawText(int x, int y, const String& text, bool black = true);
     void drawLargeText(int x, int y, const String& text, bool black = true);
-    void clearScreen();
+    
 };
 
 #endif // DISPLAY_MANAGER_H

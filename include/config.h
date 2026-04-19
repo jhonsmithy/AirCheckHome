@@ -15,7 +15,7 @@
 #define DEEP_SLEEP_INTERVAL 60000  // 60 seconds
 
 // Watchdog timer timeout in seconds
-#define WATCHDOG_TIMEOUT 10
+#define WATCHDOG_TIMEOUT 1000
 
 // BME280 SPI sensor settings
 // ESP8266 (Wemos D1 Mini) SPI pins:

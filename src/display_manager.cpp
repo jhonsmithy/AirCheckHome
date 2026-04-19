@@ -30,7 +30,7 @@ bool DisplayManager::begin() {
     // Clear display using fillRect
     Serial.println("Clearing display with fillRect...");
     epd->clear();
-
+    
     // epd->fillRect(0, 0, epd->width(), epd->height(), WHITE);
     //epd->update();
 
@@ -93,7 +93,7 @@ void DisplayManager::showSensorData(float temperature, float pressure, float hum
     const unsigned long BUSY_TIMEOUT = 15000; // 15 seconds timeout
     
     epd->update();
-    
+    delay(100);
     // Wait for update to complete with timeout
     while (digitalRead(EINK_BUSY_PIN) == HIGH) {
         if (millis() - update_start > BUSY_TIMEOUT) {
@@ -128,6 +128,7 @@ void DisplayManager::showStatus(const String& status) {
     pinMode(BME280_SPI_CS_PIN, OUTPUT);
     digitalWrite(BME280_SPI_CS_PIN, HIGH);
     delay(10); // Small delay for stability
+    SPI.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE0));
 
     // Clear screen
     epd->fillRect(0, 0, epd->width(), epd->height(), WHITE);
@@ -144,6 +145,7 @@ void DisplayManager::showStatus(const String& status) {
     const unsigned long BUSY_TIMEOUT = 10000; // 10 seconds timeout
     
     epd->update();
+    SPI.endTransaction();
     
     // Wait for update to complete with timeout
     while (digitalRead(EINK_BUSY_PIN) == HIGH) {
@@ -170,7 +172,10 @@ void DisplayManager::showTestMessage() {
     // CRITICAL: De-select BME280 (CS HIGH = disabled) to prevent bus conflicts
     pinMode(BME280_SPI_CS_PIN, OUTPUT);
     digitalWrite(BME280_SPI_CS_PIN, HIGH);
+    pinMode(EINK_CS_PIN, OUTPUT);
+    digitalWrite(EINK_CS_PIN, LOW);
     delay(10);
+    SPI.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE0));
 
     // Clear screen
     epd->fillRect(0, 0, epd->width(), epd->height(), WHITE);
@@ -208,7 +213,9 @@ void DisplayManager::showTestMessage() {
     const unsigned long BUSY_TIMEOUT = 10000; // 10 seconds timeout
     
     epd->update();
-    
+    delay(2000);
+    SPI.endTransaction();
+
     // Wait for update to complete with timeout
     while (digitalRead(EINK_BUSY_PIN) == HIGH) {
         if (millis() - update_start > BUSY_TIMEOUT) {
@@ -218,7 +225,6 @@ void DisplayManager::showTestMessage() {
         delay(10);
         yield();
     }
-    Serial.println("Display test message update completed");
 
     Serial.println("Test message displayed successfully!");
 }
@@ -244,11 +250,14 @@ void DisplayManager::clearScreen() {
     // CRITICAL: De-select BME280 (CS HIGH = disabled) to prevent bus conflicts
     pinMode(BME280_SPI_CS_PIN, OUTPUT);
     digitalWrite(BME280_SPI_CS_PIN, HIGH);
-    delay(1);
+    delay(10);
+    SPI.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE0));
+
     // Just do a landscape reset
     //epd->landscape();
     //epd->clear(); // COMMENTED OUT
     // Корректная очистка:
     epd->fillRect(0, 0, epd->width(), epd->height(), WHITE);
     epd->update();
+    SPI.endTransaction();
 }

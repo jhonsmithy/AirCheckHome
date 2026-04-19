@@ -25,11 +25,9 @@ void setup() {
     Serial.println("=== AirCheck Environment Monitor ===");
     Serial.println("Initializing...");
      // BME280
-    //SPI_BME.pins(BME280_SPI_SCK_PIN, BME280_SPI_MISO_PIN, BME280_SPI_MOSI_PIN, BME280_SPI_CS_PIN);
-    //SPI_BME.begin();
+    SPI.pins(BME280_SPI_SCK_PIN, BME280_SPI_MISO_PIN, BME280_SPI_MOSI_PIN, BME280_SPI_CS_PIN);
+    SPI.begin();
     Serial.println("Initializing SPI bus...");
-    //SPI.setDataMode(SPI_MODE0);
-    //SPI.setFrequency(1000000); // 4MHz for E-Ink display compatibility
     Serial.println("SPI bus initialized successfully!");
 
    // Initialize E-Ink display (always try to init display)
@@ -39,6 +37,8 @@ void setup() {
     } else {
         Serial.println("E-Ink display initialized successfully!");
     }
+
+    //displayManager.showTestMessage();
 
     // Initialize BME280 sensor via SPI (uses already initialized SPI bus)
     if (!sensorManager.begin()) {
@@ -74,12 +74,18 @@ void loop() {
         Serial.println("About to update display...");
         if (sensorManager.isInitialized()) {
             Serial.println("Sensor OK, showing data...");
+            
             displayManager.showSensorData(
                 sensorManager.getTemperature(),
                 sensorManager.getPressure(),
                 sensorManager.getHumidity(),
                 true
             );
+            
+
+           //displayManager.clearScreen();
+           //displayManager.showTestMessage();
+
         } else {
             // Show status when sensor is not connected
             Serial.println("Sensor not initialized, showing 'No Sensor'...");

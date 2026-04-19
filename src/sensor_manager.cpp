@@ -7,7 +7,7 @@
 #include <Adafruit_BME280.h>
 
 SensorManager::SensorManager():
- bme(BME280_SPI_CS_PIN, BME280_SPI_MOSI_PIN, BME280_SPI_MISO_PIN, BME280_SPI_SCK_PIN),
+ bme(BME280_SPI_CS_PIN),
  initialized(false), 
  m_temperature(0.0f), 
  m_pressure(0.0f), 
@@ -22,6 +22,12 @@ SensorManager::~SensorManager() {
 
 bool SensorManager::begin() {
     Serial.println("Initializing BME280 sensor...");
+
+    pinMode(EINK_CS_PIN, OUTPUT);
+    digitalWrite(EINK_CS_PIN, HIGH);
+    delay(10);
+    SPI.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE0));
+
     if (!bme.begin()) {       
         initialized = false; // SPI initialization failed
     }
@@ -33,8 +39,12 @@ bool SensorManager::begin() {
                     Adafruit_BME280::SAMPLING_X2,     // Temperature resolution
                     Adafruit_BME280::SAMPLING_X2,     // Pressure resolution
                     Adafruit_BME280::SAMPLING_X2);    // Humidity resolution
-
     initialized = true;
+    initialized = bme.init();
+    pinMode(BME280_SPI_CS_PIN, OUTPUT);
+    digitalWrite(BME280_SPI_CS_PIN, HIGH);
+    SPI.endTransaction();
+
     update();
     checkSensorStatus();
     return initialized;
@@ -45,13 +55,16 @@ void SensorManager::update() {
 
     pinMode(EINK_CS_PIN, OUTPUT);
     digitalWrite(EINK_CS_PIN, HIGH);
-    delay(1);
+    delay(10);
+    SPI.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE0));
+
     // Read sensor data
     m_temperature = bme.readTemperature();
     m_pressure = bme.readPressure() / 100.0F;  // hPa
     m_humidity = bme.readHumidity();
     pinMode(BME280_SPI_CS_PIN, OUTPUT);
     digitalWrite(BME280_SPI_CS_PIN, HIGH);
+    SPI.endTransaction();
 
     // Apply calibration offsets
     m_temperature += TEMPERATURE_OFFSET;
