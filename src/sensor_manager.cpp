@@ -7,12 +7,12 @@
 #include <Adafruit_BME280.h>
 
 SensorManager::SensorManager():
- bme(BME280_SPI_CS_PIN),
+ bme(BME280_SPI_CS_PIN, BME280_SPI_MOSI_PIN, BME280_SPI_MISO_PIN, BME280_SPI_SCK_PIN),
  initialized(false), 
  m_temperature(0.0f), 
  m_pressure(0.0f), 
  m_humidity(0.0f) 
- {
+{
     // Constructor
 }
 
@@ -22,7 +22,20 @@ SensorManager::~SensorManager() {
 
 bool SensorManager::begin() {
     Serial.println("Initializing BME280 sensor...");
-    setupSensor();
+    if (!bme.begin()) {       
+        initialized = false; // SPI initialization failed
+    }
+    
+    // Set the sensor parameters for optimal performance
+    // MODE_NORMAL: Continuous measurement mode
+    // SAMPLING_X2: Medium resolution for balance between accuracy and power
+    bme.setSampling(Adafruit_BME280::MODE_FORCED,     // Operating mode
+                    Adafruit_BME280::SAMPLING_X2,     // Temperature resolution
+                    Adafruit_BME280::SAMPLING_X2,     // Pressure resolution
+                    Adafruit_BME280::SAMPLING_X2);    // Humidity resolution
+
+    initialized = true;
+    update();
     checkSensorStatus();
     return initialized;
 }
@@ -30,10 +43,15 @@ bool SensorManager::begin() {
 void SensorManager::update() {
     if (!initialized) return;
 
+    pinMode(EINK_CS_PIN, OUTPUT);
+    digitalWrite(EINK_CS_PIN, HIGH);
+    delay(1);
     // Read sensor data
     m_temperature = bme.readTemperature();
     m_pressure = bme.readPressure() / 100.0F;  // hPa
     m_humidity = bme.readHumidity();
+    pinMode(BME280_SPI_CS_PIN, OUTPUT);
+    digitalWrite(BME280_SPI_CS_PIN, HIGH);
 
     // Apply calibration offsets
     m_temperature += TEMPERATURE_OFFSET;
@@ -77,39 +95,15 @@ bool SensorManager::isInitialized() const {
     return initialized;
 }
 
-void SensorManager::setupSensor() {
-      if (!bme.begin()) {
-        // SPI initialization failed
-        initialized = false;
-        Serial.println("BME280.begin() returned false!");
-        Serial.println("Check wiring and power supply");
-        return;
-    }
-    
-    // Set the sensor parameters for optimal performance
-    // MODE_NORMAL: Continuous measurement mode
-    // SAMPLING_X2: Medium resolution for balance between accuracy and power
-    bme.setSampling(Adafruit_BME280::MODE_NORMAL,     // Operating mode
-                    Adafruit_BME280::SAMPLING_X2,     // Temperature resolution
-                    Adafruit_BME280::SAMPLING_X2,     // Pressure resolution
-                    Adafruit_BME280::SAMPLING_X2);    // Humidity resolution
-
-    initialized = true;
-}
-
 void SensorManager::checkSensorStatus() {
     // Check if the sensor is initialized
     if (!initialized) {
-        Serial.println("BME280 sensor not initialized!");
         return;
     }
-
     // Check if the sensor is responding by reading temperature
-    float temp = bme.readTemperature();
-    
+    float temp = getTemperature();
     // Feed watchdog to prevent reset
     yield();
-
     if (isnan(temp) || temp < -40.0f || temp > 85.0f) {
         Serial.println("BME280 sensor not responding!");
         initialized = false;

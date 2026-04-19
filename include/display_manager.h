@@ -4,10 +4,8 @@
 
 #include "display_config.h"
 #include <Arduino.h>
-
-#if DISPLAY_ENABLED
 #include "heltec-eink-modules.h"
-#endif
+
 
 class DisplayManager {
 public:
@@ -21,11 +19,8 @@ public:
     void sleep();
 
 private:
-#if DISPLAY_ENABLED
     QYEG0213RWS800* epd;
-#endif
     bool initialized;
-
     void drawText(int x, int y, const String& text, bool black = true);
     void drawLargeText(int x, int y, const String& text, bool black = true);
     void clearScreen();
