@@ -6,7 +6,13 @@
 #include <SPI.h>
 #include <Adafruit_BME280.h>
 
-SensorManager::SensorManager() : initialized(false), m_temperature(0.0f), m_pressure(0.0f), m_humidity(0.0f) {
+SensorManager::SensorManager():
+ bme(BME280_SPI_CS_PIN),
+ initialized(false), 
+ m_temperature(0.0f), 
+ m_pressure(0.0f), 
+ m_humidity(0.0f) 
+ {
     // Constructor
 }
 
@@ -72,7 +78,7 @@ bool SensorManager::isInitialized() const {
 }
 
 void SensorManager::setupSensor() {
-      if (!bme.begin(BME280_SPI_CS_PIN)) {
+      if (!bme.begin()) {
         // SPI initialization failed
         initialized = false;
         Serial.println("BME280.begin() returned false!");
